@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gradient-to-br from-magic-dark via-magic-purple to-magic-dark text-white;
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .magical-card {
+    @apply bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-magic-gold/30 shadow-2xl;
+  }
+  
+  .magical-button {
+    @apply bg-gradient-to-r from-magic-purple to-magic-gold text-white font-semibold py-3 px-8 rounded-full 
+    hover:shadow-lg hover:shadow-magic-gold/50 transition-all duration-300 transform hover:scale-105
+    flex items-center gap-2 justify-center;
+  }
+  
+  .sparkle {
+    animation: sparkle 1.5s ease-in-out infinite;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #4B0082, #FFD700);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #FFD700, #4B0082);
+}
