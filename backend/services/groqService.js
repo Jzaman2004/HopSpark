@@ -1,9 +1,15 @@
 import Groq from 'groq-sdk';
 
-const apiKey = process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY;
-const groq = apiKey && apiKey !== 'your_groq_api_key_here' ? new Groq({ apiKey }) : null;
+function getGroqClient() {
+  const apiKey = process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY;
+  if (!apiKey || apiKey === 'your_groq_api_key_here') {
+    return null;
+  }
+  return new Groq({ apiKey });
+}
 
 export async function analyzeCosplayDescription(description, options) {
+  const groq = getGroqClient();
   if (!groq) {
     console.warn('Groq API key not configured, using fallback analysis');
     return getFallbackAnalysis(description, options);
@@ -54,6 +60,7 @@ export async function analyzeCosplayDescription(description, options) {
 }
 
 export async function generateDallePrompt(cosplayData, description) {
+  const groq = getGroqClient();
   if (!groq) {
     console.warn('Groq API key not configured, using fallback prompt');
     return getFallbackPrompt(cosplayData, description);
@@ -96,6 +103,7 @@ export async function generateDallePrompt(cosplayData, description) {
 }
 
 export async function generateProductSearchQueries(cosplayData) {
+  const groq = getGroqClient();
   if (!groq) {
     console.warn('Groq API key not configured, using fallback search queries');
     return getFallbackSearchQueries(cosplayData);

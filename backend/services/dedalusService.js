@@ -1,6 +1,6 @@
 export async function generateCosplayImage(prompt) {
   const apiKey = process.env.DEDALUS_API_KEY || process.env.VITE_DEDALUS_API_KEY;
-  const rawApiUrl = process.env.DEDALUS_API_URL || process.env.VITE_DEDALUS_API_URL || 'https://api.dedalus.ai';
+  const rawApiUrl = process.env.DEDALUS_API_URL || process.env.VITE_DEDALUS_API_URL || 'https://api.dedaluslabs.ai';
   const apiUrl = rawApiUrl.endsWith('/v1') ? rawApiUrl : `${rawApiUrl}/v1`;
   const model = process.env.DEDALUS_IMAGE_MODEL || 'openai/dall-e-3';
   

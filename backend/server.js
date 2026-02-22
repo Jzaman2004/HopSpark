@@ -1,12 +1,13 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+
+// Load environment variables FIRST before importing services
+dotenv.config({ path: '../.env.local' });
+
 import { analyzeCosplayDescription, generateDallePrompt, generateProductSearchQueries } from './services/groqService.js';
 import { generateCosplayImage } from './services/dedalusService.js';
 import { findMatchingProducts } from './services/productService.js';
-
-// Load environment variables
-dotenv.config({ path: '../.env.local' });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
