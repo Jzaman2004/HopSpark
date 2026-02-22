@@ -1,6 +1,8 @@
 export async function generateCosplayImage(prompt) {
   const apiKey = process.env.DEDALUS_API_KEY || process.env.VITE_DEDALUS_API_KEY;
-  const apiUrl = process.env.DEDALUS_API_URL || process.env.VITE_DEDALUS_API_URL || 'https://api.dedalus.ai/v1';
+  const rawApiUrl = process.env.DEDALUS_API_URL || process.env.VITE_DEDALUS_API_URL || 'https://api.dedalus.ai';
+  const apiUrl = rawApiUrl.endsWith('/v1') ? rawApiUrl : `${rawApiUrl}/v1`;
+  const model = process.env.DEDALUS_IMAGE_MODEL || 'openai/dall-e-3';
   
   if (!apiKey) {
     console.warn('Dedalus API key not found, using placeholder');
@@ -15,12 +17,13 @@ export async function generateCosplayImage(prompt) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'dall-e-3',
+        model,
         prompt: prompt,
         n: 1,
         size: '1024x1024',
         quality: 'hd',
-        style: 'vivid'
+        style: 'vivid',
+        response_format: 'b64_json'
       })
     });
 
@@ -33,7 +36,10 @@ export async function generateCosplayImage(prompt) {
     
     // Handle different response formats
     if (data.data && data.data[0]) {
-      return data.data[0].url || data.data[0].b64_json;
+      const imageUrl = data.data[0].url;
+      const base64Data = data.data[0].b64_json;
+      if (imageUrl) return imageUrl;
+      if (base64Data) return `data:image/png;base64,${base64Data}`;
     }
     
     throw new Error('Invalid response format from Dedalus API');

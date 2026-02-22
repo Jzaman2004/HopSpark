@@ -1,9 +1,17 @@
+import { useEffect, useState } from 'react';
 import { RotateCcw, Home, Download, Leaf, DollarSign } from 'lucide-react';
 
 function ResultsDisplay({ results, onStartOver, onRegenerate }) {
   if (!results) return null;
 
-  const { imageUrl, products, analysis } = results;
+  const { imageUrl, products, analysis, imageStatus } = results;
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    setImageLoaded(false);
+    setImageError(false);
+  }, [imageUrl]);
 
   return (
     <div className="space-y-8">
@@ -41,7 +49,19 @@ function ResultsDisplay({ results, onStartOver, onRegenerate }) {
                 src={imageUrl}
                 alt="Generated cosplay preview"
                 className="w-full rounded-lg shadow-2xl"
+                onLoad={() => setImageLoaded(true)}
+                onError={() => setImageError(true)}
               />
+              {!imageLoaded && !imageError && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-magic-purple/40 backdrop-blur-sm">
+                  <p className="text-magic-cream/80">Loading image...</p>
+                </div>
+              )}
+              {imageError && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-red-500/20">
+                  <p className="text-red-200">Image failed to load</p>
+                </div>
+              )}
               <button
                 onClick={() => {
                   const link = document.createElement('a');
@@ -59,6 +79,12 @@ function ResultsDisplay({ results, onStartOver, onRegenerate }) {
           ) : (
             <div className="bg-magic-purple/20 rounded-lg aspect-square flex items-center justify-center">
               <p className="text-magic-cream/60">No image generated</p>
+            </div>
+          )}
+
+          {imageStatus === 'placeholder' && (
+            <div className="mt-3 text-sm text-magic-cream/70">
+              Using placeholder image. Check your Dedalus API key and URL.
             </div>
           )}
 

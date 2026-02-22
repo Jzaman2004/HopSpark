@@ -56,14 +56,20 @@ app.post('/api/generate', async (req, res) => {
     // Step 5: Generate image
     console.log('Step 5: Generating image...');
     const imageUrl = await generateCosplayImage(imagePrompt);
-    console.log('Image generated:', imageUrl ? 'success' : 'failed');
+    const imageStatus = !imageUrl
+      ? 'missing'
+      : imageUrl.includes('via.placeholder.com')
+        ? 'placeholder'
+        : 'generated';
+    console.log('Image generated:', imageUrl ? imageStatus : 'failed');
 
     // Return results
     const results = {
       analysis,
       products,
       imageUrl,
-      imagePrompt
+      imagePrompt,
+      imageStatus
     };
 
     console.log('✅ Generation complete!');
