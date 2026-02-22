@@ -1,12 +1,18 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+// Get directory path in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Load environment variables FIRST before importing services
-dotenv.config({ path: '../.env.local' });
+dotenv.config({ path: join(__dirname, '../.env.local') });
 
 import { analyzeCosplayDescription, generateDallePrompt, generateProductSearchQueries } from './services/groqService.js';
-import { generateCosplayImage } from './services/dedalusService.js';
+import { generateCosplayImage, base64ToDataUrl } from './services/dedalusService.js';
 import { findMatchingProducts } from './services/productService.js';
 
 const app = express();
@@ -56,13 +62,14 @@ app.post('/api/generate', async (req, res) => {
 
     // Step 5: Generate image
     console.log('Step 5: Generating image...');
-    const imageUrl = await generateCosplayImage(imagePrompt);
+    const base64Image = await generateCosplayImage(imagePrompt);
+    const imageUrl = base64ToDataUrl(base64Image);
     const imageStatus = !imageUrl
       ? 'missing'
-      : imageUrl.includes('via.placeholder.com')
+      : imageUrl === base64ToDataUrl('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==')
         ? 'placeholder'
         : 'generated';
-    console.log('Image generated:', imageUrl ? imageStatus : 'failed');
+    console.log('Image generated:', imageStatus);
 
     // Return results
     const results = {

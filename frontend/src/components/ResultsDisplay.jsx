@@ -9,8 +9,14 @@ function ResultsDisplay({ results, onStartOver, onRegenerate }) {
   const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
-    setImageLoaded(false);
-    setImageError(false);
+    // For base64 data URLs, they load instantly - no loading needed
+    if (imageUrl && imageUrl.startsWith('data:')) {
+      setImageLoaded(true);
+      setImageError(false);
+    } else {
+      setImageLoaded(false);
+      setImageError(false);
+    }
   }, [imageUrl]);
 
   return (

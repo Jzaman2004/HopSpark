@@ -1,8 +1,7 @@
+// Based on COSPLAYFORGE working pattern
 export async function generateCosplayImage(prompt) {
   const apiKey = process.env.DEDALUS_API_KEY || process.env.VITE_DEDALUS_API_KEY;
-  const rawApiUrl = process.env.DEDALUS_API_URL || process.env.VITE_DEDALUS_API_URL || 'https://api.dedaluslabs.ai';
-  const apiUrl = rawApiUrl.endsWith('/v1') ? rawApiUrl : `${rawApiUrl}/v1`;
-  const model = process.env.DEDALUS_IMAGE_MODEL || 'openai/dall-e-3';
+  const baseUrl = process.env.DEDALUS_API_URL || process.env.VITE_DEDALUS_API_URL || 'https://api.dedaluslabs.ai';
   
   if (!apiKey) {
     console.warn('Dedalus API key not found, using placeholder');
@@ -10,36 +9,38 @@ export async function generateCosplayImage(prompt) {
   }
 
   try {
-    const response = await fetch(`${apiUrl}/images/generations`, {
+    const requestBody = {
+      prompt: prompt,
+      model: 'openai/dall-e-3',
+      size: '1024x1024',
+      quality: 'hd',
+      response_format: 'b64_json',
+      n: 1
+    };
+
+    console.log('Calling Dedalus API:', `${baseUrl}/v1/images/generations`);
+
+    const response = await fetch(`${baseUrl}/v1/images/generations`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
       },
-      body: JSON.stringify({
-        model,
-        prompt: prompt,
-        n: 1,
-        size: '1024x1024',
-        quality: 'hd',
-        style: 'vivid',
-        response_format: 'b64_json'
-      })
+      body: JSON.stringify(requestBody)
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(`Dedalus API error: ${error.message || response.statusText}`);
+      const errorText = await response.text();
+      console.error('Dedalus API error response:', errorText);
+      throw new Error(`Dedalus API error: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
+    console.log('Dedalus API response received');
     
-    // Handle different response formats
-    if (data.data && data.data[0]) {
-      const imageUrl = data.data[0].url;
-      const base64Data = data.data[0].b64_json;
-      if (imageUrl) return imageUrl;
-      if (base64Data) return `data:image/png;base64,${base64Data}`;
+    // Return base64 data
+    if (data.data && data.data[0] && data.data[0].b64_json) {
+      return data.data[0].b64_json;
     }
     
     throw new Error('Invalid response format from Dedalus API');
@@ -49,8 +50,13 @@ export async function generateCosplayImage(prompt) {
   }
 }
 
+// Convert base64 to data URL for frontend
+export function base64ToDataUrl(base64Data) {
+  return `data:image/png;base64,${base64Data}`;
+}
+
 function generatePlaceholderImage(prompt) {
-  // Generate a placeholder using a public service
-  const encodedPrompt = encodeURIComponent(prompt.substring(0, 100));
-  return `https://via.placeholder.com/1024x1024/4B0082/FFD700?text=HopSpark+Cosplay`;
+  // Return a base64-encoded placeholder pixel (1x1 purple image)
+  // This way the frontend can still handle it consistently
+  return 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==';
 }

@@ -67,32 +67,43 @@ export async function generateDallePrompt(cosplayData, description) {
   }
   
   try {
+    const systemPrompt = `You are an expert at creating detailed DALL-E 3 prompts for magical cosplay concept art.
+
+Create a prompt that:
+- Describes a full-body or 3/4 view cosplay illustration
+- Incorporates bunny features (ears, tail) naturally into the magical character design
+- Uses specific costume details and colors from the user's description
+- Creates a mystical, whimsical atmosphere with sparkles and magical effects
+- Is styled as professional concept art or illustration (NOT a photograph of a real person)
+- Captures the ${cosplayData.aesthetic || 'magical'} aesthetic
+
+Return ONLY the prompt text, nothing else. Maximum 200 words.`;
+
+    const userPrompt = `Create a DALL-E 3 prompt for this cosplay concept:
+
+User Description: ${description}
+
+Style Details:
+- Colors: ${cosplayData.colors?.join(', ') || 'purple, gold'}
+- Costume Pieces: ${cosplayData.costumePieces?.join(', ') || 'magical outfit'}
+- Theme: ${cosplayData.magicTheme || 'wizard'}
+- Aesthetic: ${cosplayData.aesthetic || 'cute'}
+- Bunny Elements: ${cosplayData.bunnyElements?.join(', ') || 'ears, tail'}`;
+
     const completion = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
       messages: [
         {
           role: 'system',
-          content: `Create a detailed DALL-E 3 prompt for generating cosplay preview images.
-          Requirements:
-          - Full body shot or 3/4 view
-          - Specific costume details from user description
-          - Magical atmosphere (sparkles, mystical effects)
-          - Bunny features (ears, tail) integrated naturally
-          - High quality, professional cosplay photography style
-          - Whimsical and magical aesthetic
-          - NOT a real photo of a person, but a cosplay concept art or illustration
-          
-          Return ONLY the prompt text, nothing else.`
+          content: systemPrompt
         },
         {
           role: 'user',
-          content: `Create DALL-E prompt for: ${description}
-          
-          Extracted data: ${JSON.stringify(cosplayData)}`
+          content: userPrompt
         }
       ],
       temperature: 0.8,
-      max_tokens: 300
+      max_tokens: 400
     });
     
     return completion.choices[0].message.content.trim();
@@ -177,7 +188,12 @@ function getFallbackAnalysis(description, options) {
 }
 
 function getFallbackPrompt(cosplayData, description) {
-  return `Professional cosplay concept art illustration of a magical bunny character in ${cosplayData.aesthetic} style, wearing ${cosplayData.costumePieces.join(', ')}, with ${cosplayData.colors.join(' and ')} color scheme, mystical atmosphere with sparkles and magical effects, full body shot, high quality digital art, whimsical and enchanting`;
+  const colors = cosplayData.colors?.join(' and ') || 'purple and gold';
+  const pieces = cosplayData.costumePieces?.join(', ') || 'magical robes';
+  const aesthetic = cosplayData.aesthetic || 'magical';
+  const theme = cosplayData.magicTheme || 'wizard';
+  
+  return `A whimsical full-body concept art illustration of a ${aesthetic} bunny ${theme} character wearing ${pieces} in ${colors} colors. The character has cute bunny ears and a fluffy tail integrated naturally into the magical costume design. Mystical atmosphere with sparkles, magical glowing effects, and enchanted energy swirling around. Professional digital art style, fantasy character design, magical and enchanting mood. NOT a photograph, but a stylized cosplay concept illustration with vibrant colors and magical lighting.`;
 }
 
 function getFallbackSearchQueries(cosplayData) {
